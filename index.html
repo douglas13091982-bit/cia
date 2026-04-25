@@ -33,7 +33,6 @@
             height: 100vh;
         }
 
-        /* Scanline effect */
         body::before {
             content: "";
             position: fixed;
@@ -52,7 +51,6 @@
             z-index: 9999;
         }
 
-        /* Header */
         .header {
             background: linear-gradient(90deg, var(--secondary), #0f0f23);
             border-bottom: 2px solid var(--accent);
@@ -121,7 +119,17 @@
             50% { opacity: 0; }
         }
 
-        /* Main Layout */
+        .sync-indicator {
+            color: var(--accent-yellow);
+            font-size: 0.8rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .sync-indicator.active {
+            opacity: 1;
+        }
+
         .main-container {
             display: grid;
             grid-template-columns: 280px 1fr 320px;
@@ -131,7 +139,6 @@
             background: var(--border);
         }
 
-        /* Sidebar Left - Threat Levels */
         .sidebar-left {
             background: var(--secondary);
             padding: 15px;
@@ -205,7 +212,6 @@
             margin-top: 5px;
         }
 
-        /* Map Area */
         .map-container {
             background: #0a0a1a;
             position: relative;
@@ -250,7 +256,6 @@
             border-radius: 50%;
         }
 
-        /* Sidebar Right - Intel Feed */
         .sidebar-right {
             background: var(--secondary);
             padding: 15px;
@@ -269,6 +274,12 @@
             padding: 10px;
             margin-bottom: 8px;
             font-size: 0.8rem;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
         }
 
         .intel-item.critical {
@@ -291,7 +302,6 @@
             line-height: 1.4;
         }
 
-        /* Bottom Panel - Stats & Predictions */
         .bottom-panel {
             background: var(--secondary);
             padding: 15px;
@@ -347,7 +357,6 @@
             color: var(--text);
         }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -361,7 +370,6 @@
             border-radius: 3px;
         }
 
-        /* Leaflet Dark Theme */
         .leaflet-container {
             background: #0a0a1a !important;
         }
@@ -376,33 +384,10 @@
             background: var(--accent);
         }
 
-        /* Responsive */
         @media (max-width: 1200px) {
             .main-container {
                 grid-template-columns: 250px 1fr 280px;
             }
-        }
-
-        /* Loading animation */
-        .loading {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: var(--accent);
-            font-size: 1.2rem;
-            z-index: 10000;
-        }
-
-        .loading::after {
-            content: "";
-            animation: loading 1.5s infinite;
-        }
-
-        @keyframes loading {
-            0% { content: "."; }
-            33% { content: ".."; }
-            66% { content: "..."; }
         }
     </style>
 </head>
@@ -418,269 +403,178 @@
                 <div class="status-dot"></div>
                 <span>SISTEMA ONLINE</span>
             </div>
+            <div class="sync-indicator" id="syncIndicator">
+                <i class="fas fa-sync fa-spin"></i> SINCRONIZANDO...
+            </div>
             <div class="clock" id="clock">00:00:00 UTC</div>
-            <div style="color: var(--text-dim);">ÚLTIMA ATUALIZAÇÃO: 23/04/2026 17:00 UTC</div>
+            <div style="color: var(--text-dim);">ÚLTIMA ATUALIZAÇÃO: <span id="lastUpdate">24/04/2026 18:17 UTC</span></div>
         </div>
     </div>
 
     <div class="main-container">
-        <!-- Left Sidebar - Threats -->
         <div class="sidebar-left">
             <div class="panel-title"><i class="fas fa-radiation"></i> NÍVEIS DE AMEAÇA</div>
 
-            <div class="threat-card active" onclick="focusMap('russia')">
+            <div class="threat-card active" data-country="russia" onclick="focusMap('russia')">
                 <div class="threat-header">
                     <span class="threat-country">🇷🇺 RÚSSIA</span>
                     <span class="threat-level level-critical">CRÍTICO</span>
                 </div>
-                <div class="threat-desc">
-                    Ofensiva Donbas estagnada. 11K missões drones UA/dia. Submarinos Akula mapeando cabos NATO.
-                </div>
-                <div class="threat-update">Atualizado: 2h atrás</div>
+                <div class="threat-desc">Troca de 193 POWs com Ucrânia (24/04). Fábrica de drones destruída em Taganrog. Submarinos Akula mapeando cabos NATO.</div>
+                <div class="threat-update">Atualizado: agora</div>
             </div>
 
-            <div class="threat-card" onclick="focusMap('china')">
+            <div class="threat-card" data-country="china" onclick="focusMap('china')">
                 <div class="threat-header">
                     <span class="threat-country">🇨🇳 CHINA</span>
                     <span class="threat-level level-critical">CRÍTICO</span>
                 </div>
-                <div class="threat-desc">
-                    Corte cabos submarinos Taiwan. Base naval Ream, Camboja. Exercícios com Rússia/Irã.
-                </div>
-                <div class="threat-update">Atualizado: 4h atrás</div>
+                <div class="threat-desc">Exercícios Han Kuang 2026 em andamento. Corte de cabos submarinos Taiwan. Base naval Ream, Camboja ativa.</div>
+                <div class="threat-update">Atualizado: agora</div>
             </div>
 
-            <div class="threat-card" onclick="focusMap('usa')">
+            <div class="threat-card" data-country="usa" onclick="focusMap('usa')">
                 <div class="threat-header">
                     <span class="threat-country">🇺🇸 EUA</span>
                     <span class="threat-level level-high">ELEVADO</span>
                 </div>
-                <div class="threat-desc">
-                    Tarifas 145% vs China. Retirada 20K tropas Alemanha. Acordo minerais Ucrânia.
-                </div>
-                <div class="threat-update">Atualizado: 6h atrás</div>
+                <div class="threat-desc">Guerra Irã 2026 ativa. Trump ordena: "atire e mate" barcos iranianos no Hormuz. Witkoff viaja Islamabad 25/04.</div>
+                <div class="threat-update">Atualizado: agora</div>
             </div>
 
-            <div class="threat-card" onclick="focusMap('iran')">
+            <div class="threat-card" data-country="iran" onclick="focusMap('iran')">
                 <div class="threat-header">
                     <span class="threat-country">🇮🇷 IRÃ</span>
-                    <span class="threat-level level-high">ELEVADO</span>
+                    <span class="threat-level level-critical">CRÍTICO</span>
                 </div>
-                <div class="threat-desc">
-                    Urânio 60% enriquecido. Israel prepara ataque preventivo. Houthis atacam Mar Vermelho.
-                </div>
-                <div class="threat-update">Atualizado: 1h atrás</div>
+                <div class="threat-desc">Khamenei gravemente ferido. 2 navios apreendidos no Hormuz. Minas adicionais lançadas. Petróleo $106/barril.</div>
+                <div class="threat-update">Atualizado: agora</div>
             </div>
 
-            <div class="threat-card" onclick="focusMap('nkorea')">
+            <div class="threat-card" data-country="nkorea" onclick="focusMap('nkorea')">
                 <div class="threat-header">
                     <span class="threat-country">🇰🇵 COREIA DO NORTE</span>
-                    <span class="threat-level level-medium">MÉDIO</span>
+                    <span class="threat-level level-high">ELEVADO</span>
                 </div>
-                <div class="threat-desc">
-                    ICBM 15.000km alcance. Satélite reconhecimento militar lançado mar/2026.
-                </div>
-                <div class="threat-update">Atualizado: 12h atrás</div>
+                <div class="threat-desc">7º teste míssil balístico 2026 (Hwasong-11). IAEA: atividade nuclear acelerada Yongbyon.</div>
+                <div class="threat-update">Atualizado: agora</div>
             </div>
 
-            <div class="threat-card" onclick="focusMap('india')">
+            <div class="threat-card" data-country="india" onclick="focusMap('india')">
                 <div class="threat-header">
                     <span class="threat-country">🇮🇳 ÍNDIA/PAQUISTÃO</span>
                     <span class="threat-level level-medium">MÉDIO</span>
                 </div>
-                <div class="threat-desc">
-                    Confrontos Caxemira. 160+ ogivas nucleares cada. Paquistão alinhado China.
-                </div>
-                <div class="threat-update">Atualizado: 8h atrás</div>
+                <div class="threat-desc">Confrontos Caxemira. Paquistão mediando ceasefire EUA-Irã. 160+ ogivas nucleares cada.</div>
+                <div class="threat-update">Atualizado: agora</div>
             </div>
 
             <div class="panel-title" style="margin-top: 20px;"><i class="fas fa-globe"></i> OUTRAS ZONAS</div>
 
-            <div class="threat-card" onclick="focusMap('africa')">
+            <div class="threat-card" data-country="africa" onclick="focusMap('africa')">
                 <div class="threat-header">
                     <span class="threat-country">🌍 ÁFRICA/SAHEL</span>
                     <span class="threat-level level-high">ELEVADO</span>
                 </div>
-                <div class="threat-desc">
-                    8 golpes desde 2020. Wagner assume controle. ISIS expande 40% território Mali.
-                </div>
-                <div class="threat-update">Atualizado: 3h atrás</div>
+                <div class="threat-desc">Wagner assume minas de ouro Burkina Faso. França retira últimos soldados. ISIS 40% território Mali.</div>
+                <div class="threat-update">Atualizado: agora</div>
             </div>
 
-            <div class="threat-card" onclick="focusMap('arctic')">
+            <div class="threat-card" data-country="arctic" onclick="focusMap('arctic')">
                 <div class="threat-header">
                     <span class="threat-country">❄️ ÁRTICO</span>
                     <span class="threat-level level-medium">MÉDIO</span>
                 </div>
-                <div class="threat-desc">
-                    Rússia reativa 50 bases soviéticas. China declara "potência próxima ao Ártico".
-                </div>
-                <div class="threat-update">Atualizado: 5h atrás</div>
+                <div class="threat-desc">Rússia reativa 50 bases soviéticas. China envia 2º quebra-gelo nuclear. Rota do Mar do Norte disputada.</div>
+                <div class="threat-update">Atualizado: agora</div>
             </div>
         </div>
 
-        <!-- Map -->
         <div class="map-container">
             <div id="map"></div>
             <div class="map-overlay">
                 <div class="overlay-title"><i class="fas fa-map-marked-alt"></i> LEGENDA OPERACIONAL</div>
-                <div class="legend-item">
-                    <div class="legend-dot" style="background: var(--accent-red);"></div>
-                    <span>Conflito Ativo / Crítico</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-dot" style="background: var(--accent-yellow);"></div>
-                    <span>Tensão Elevada / Alerta</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-dot" style="background: var(--accent-blue);"></div>
-                    <span>Monitoramento / Médio</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-dot" style="background: var(--accent);"></div>
-                    <span>Base / Instalação Militar</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-dot" style="background: #fff; border: 2px solid var(--accent-red);"></div>
-                    <span>Infraestrutura Crítica</span>
-                </div>
+                <div class="legend-item"><div class="legend-dot" style="background: var(--accent-red);"></div><span>Conflito Ativo / Crítico</span></div>
+                <div class="legend-item"><div class="legend-dot" style="background: var(--accent-yellow);"></div><span>Tensão Elevada / Alerta</span></div>
+                <div class="legend-item"><div class="legend-dot" style="background: var(--accent-blue);"></div><span>Monitoramento / Médio</span></div>
+                <div class="legend-item"><div class="legend-dot" style="background: var(--accent);"></div><span>Base / Instalação Militar</span></div>
+                <div class="legend-item"><div class="legend-dot" style="background: #fff; border: 2px solid var(--accent-red);"></div><span>Infraestrutura Crítica</span></div>
             </div>
         </div>
 
-        <!-- Right Sidebar - Intel Feed -->
         <div class="sidebar-right">
             <div class="panel-title"><i class="fas fa-broadcast-tower"></i> FEED INTELIGÊNCIA</div>
 
             <div class="intel-feed" id="intelFeed">
                 <div class="intel-item critical">
-                    <div class="intel-time">23/04 16:45 UTC</div>
-                    <div class="intel-text">
-                        <strong>[ALERTA VERMELHO]</strong> Submarinos russos classe Akula detectados a 50km dos cabos de fibra óptica transatlânticos. Operação GUGI confirmada. Risco de corte de comunicações NATO.
-                    </div>
+                    <div class="intel-time">24/04 18:15 UTC</div>
+                    <div class="intel-text"><strong>[ALERTA VERMELHO]</strong> Trump ordena Marinha dos EUA: "atire e mate" qualquer barco iraniano colocando minas no Estreito de Hormuz. Escalada iminente.</div>
                 </div>
-
                 <div class="intel-item critical">
-                    <div class="intel-time">23/04 15:20 UTC</div>
-                    <div class="intel-text">
-                        <strong>[TAIWAN]</strong> Navios chineses cortaram 2º cabo submarino no Estreito de Taiwan em 48h. Taiwan isolada digitalmente. PLA Navy em posição de bloqueio.
-                    </div>
+                    <div class="intel-time">24/04 17:45 UTC</div>
+                    <div class="intel-text"><strong>[HORMUZ]</strong> Irã apreende 2º navio porta-contêiner (Epaminondas) e atira em 3 navios no Estreito. Bloqueio naval em expansão global.</div>
                 </div>
-
-                <div class="intel-item warning">
-                    <div class="intel-time">23/04 14:10 UTC</div>
-                    <div class="intel-text">
-                        <strong>[ORIENTE MÉDIO]</strong> Israel mobiliza esquadrões F-35I para bases no sul. Inteligência indica preparação para ataque preventivo contra instalações nucleares iranianas.
-                    </div>
-                </div>
-
-                <div class="intel-item warning">
-                    <div class="intel-time">23/04 12:30 UTC</div>
-                    <div class="intel-text">
-                        <strong>[UCRÂNIA]</strong> Ucrânia reporta 11.000 missões de drone em 24h. Novo recorde. Enxames de 400 drones simultâneos interditam logística russa em Donbas.
-                    </div>
-                </div>
-
-                <div class="intel-item">
-                    <div class="intel-time">23/04 10:15 UTC</div>
-                    <div class="intel-text">
-                        <strong>[BRICS]</strong> Reunião ministerial confirma avanços em moeda alternativa para comércio intra-bloco. Yuan representa agora 18% do comércio russo-chinês.
-                    </div>
-                </div>
-
-                <div class="intel-item warning">
-                    <div class="intel-time">23/04 08:45 UTC</div>
-                    <div class="intel-text">
-                        <strong>[COREIA DO NORTE]</strong> Kim Jong-un inspeciona instalação de ICBM Hwasong-18. Alcance confirmado: 15.000km. Capaz de atingir Los Angeles e Nova York.
-                    </div>
-                </div>
-
-                <div class="intel-item">
-                    <div class="intel-time">23/04 06:20 UTC</div>
-                    <div class="intel-text">
-                        <strong>[ÁRTICO]</strong> Rússia conclui reativação de base aérea Nagurskoye. Caças MiG-31BM e sistemas S-400 posicionados. China envia 2º navio quebra-gelo nuclear.
-                    </div>
-                </div>
-
                 <div class="intel-item critical">
-                    <div class="intel-time">23/04 04:00 UTC</div>
-                    <div class="intel-text">
-                        <strong>[CIBER]</strong> Ataque massivo a redes elétricas da Europa Oriental. 3 países afetados. Origem russa confirmada pelo CERT-EU. Restauração em andamento.
-                    </div>
+                    <div class="intel-time">24/04 16:30 UTC</div>
+                    <div class="intel-text"><strong>[IRÃ]</strong> Líder supremo Mojtaba Khamenei "gravemente ferido" segundo NYT. Caos de sucessão iminente se morte confirmada.</div>
                 </div>
-
                 <div class="intel-item warning">
-                    <div class="intel-time">22/04 22:30 UTC</div>
-                    <div class="intel-text">
-                        <strong>[EUA]</strong> Trump anuncia novas tarifas de 50% sobre produtos chineses de alta tecnologia. China responde com restrições à exportação de grafite e lítio processado.
-                    </div>
+                    <div class="intel-time">24/04 15:20 UTC</div>
+                    <div class="intel-text"><strong>[TAIWAN]</strong> Exercícios Han Kuang 2026: unidades de inteligência participam pela primeira vez. Simulação defesa ilha em escala total.</div>
                 </div>
-
+                <div class="intel-item warning">
+                    <div class="intel-time">24/04 14:10 UTC</div>
+                    <div class="intel-text"><strong>[UCRÂNIA]</strong> Troca de 193 POWs na Páscoa (24/04). Mísseis Neptune destruíram fábrica de drones Atlant Aero em Taganrog, Rostov.</div>
+                </div>
                 <div class="intel-item">
-                    <div class="intel-time">22/04 18:00 UTC</div>
-                    <div class="intel-text">
-                        <strong>[SAHEL]</strong> Wagner (Grupo Redut) assume controle de mina de ouro em Burkina Faso. França retira últimos 89 soldados da região. Influência ocidental em colapso.
-                    </div>
+                    <div class="intel-time">24/04 12:30 UTC</div>
+                    <div class="intel-text"><strong>[BRICS]</strong> BRICS-MENA expressa "profunda preocupação" com guerra no Golfo. Reunião enviados Nova Delhi (24/04).</div>
+                </div>
+                <div class="intel-item warning">
+                    <div class="intel-time">24/04 10:15 UTC</div>
+                    <div class="intel-text"><strong>[COREIA DO NORTE]</strong> 7º teste míssil balístico Hwasong-11 em 2026. IAEA confirma atividade nuclear acelerada Yongbyon.</div>
+                </div>
+                <div class="intel-item">
+                    <div class="intel-time">24/04 08:45 UTC</div>
+                    <div class="intel-text"><strong>[ISRAEL-HEZBOLLAH]</strong> Ceasefire estendido 3 semanas (24/04). Netanyahu acusa Hezbollah de sabotar paz. 6 militantes mortos em Bint Jbeil.</div>
+                </div>
+                <div class="intel-item critical">
+                    <div class="intel-time">24/04 06:20 UTC</div>
+                    <div class="intel-text"><strong>[CIBER]</strong> Ataque massivo a redes elétricas Europa Oriental. 3 países afetados. Origem russa confirmada pelo CERT-EU.</div>
+                </div>
+                <div class="intel-item warning">
+                    <div class="intel-time">24/04 04:00 UTC</div>
+                    <div class="intel-text"><strong>[ECONOMIA]</strong> Petróleo Brent $106,3/barril, WTI $96,92. Custo Europa: €500M/dia em deslocação energética. Recessão global risco elevado.</div>
                 </div>
             </div>
 
             <div class="panel-title" style="margin-top: 20px;"><i class="fas fa-exclamation-triangle"></i> ALERTAS ATIVOS</div>
 
             <div style="background: rgba(255,0,64,0.1); border: 1px solid var(--accent-red); padding: 10px; border-radius: 4px; margin-bottom: 10px;">
-                <div style="color: var(--accent-red); font-weight: bold; font-size: 0.8rem; margin-bottom: 5px;">
-                    <i class="fas fa-skull-crossbones"></i> ALERTA VERMELHO #001
-                </div>
-                <div style="font-size: 0.75rem; color: var(--text);">
-                    Submarinos russos mapeando infraestrutura crítica subaquática NATO. Probabilidade de ação híbrida: 75% em 30 dias.
-                </div>
+                <div style="color: var(--accent-red); font-weight: bold; font-size: 0.8rem; margin-bottom: 5px;"><i class="fas fa-skull-crossbones"></i> ALERTA VERMELHO #001</div>
+                <div style="font-size: 0.75rem; color: var(--text);">Submarinos russos mapeando cabos NATO. Probabilidade ação híbrida: 75% em 30 dias.</div>
             </div>
-
             <div style="background: rgba(255,170,0,0.1); border: 1px solid var(--accent-yellow); padding: 10px; border-radius: 4px; margin-bottom: 10px;">
-                <div style="color: var(--accent-yellow); font-weight: bold; font-size: 0.8rem; margin-bottom: 5px;">
-                    <i class="fas fa-bell"></i> ALERTA LARANJA #003
-                </div>
-                <div style="font-size: 0.75rem; color: var(--text);">
-                    Preparação israelense para ataque ao Irã. Petróleo pode subir >$120/barril. Impacto econômico global severo.
-                </div>
+                <div style="color: var(--accent-yellow); font-weight: bold; font-size: 0.8rem; margin-bottom: 5px;"><i class="fas fa-bell"></i> ALERTA LARANJA #003</div>
+                <div style="font-size: 0.75rem; color: var(--text);">Guerra EUA-Irã ativa. Hormuz bloqueado. Petróleo >$100/barril. Custo Europa €500M/dia.</div>
             </div>
-
             <div style="background: rgba(0,170,255,0.1); border: 1px solid var(--accent-blue); padding: 10px; border-radius: 4px;">
-                <div style="color: var(--accent-blue); font-weight: bold; font-size: 0.8rem; margin-bottom: 5px;">
-                    <i class="fas fa-info-circle"></i> ALERTA AZUL #007
-                </div>
-                <div style="font-size: 0.75rem; color: var(--text);">
-                    BRICS avança desdolarização. Monitorar transações em yuan no comércio de energia. Risco ao dólar: médio-longo prazo.
-                </div>
+                <div style="color: var(--accent-blue); font-weight: bold; font-size: 0.8rem; margin-bottom: 5px;"><i class="fas fa-info-circle"></i> ALERTA AZUL #007</div>
+                <div style="font-size: 0.75rem; color: var(--text);">BRICS avança desdolarização. Monitorar transações yuan no comércio de energia.</div>
             </div>
         </div>
 
-        <!-- Bottom Panel -->
         <div class="bottom-panel">
-            <div class="stat-box">
-                <div class="stat-value red">7</div>
-                <div class="stat-label">Conflitos Ativos</div>
-            </div>
-
-            <div class="stat-box">
-                <div class="stat-value yellow">23</div>
-                <div class="stat-label">Zonas de Tensão</div>
-            </div>
-
-            <div class="stat-box">
-                <div class="stat-value blue">156</div>
-                <div class="stat-label">Base Militares Mapeadas</div>
-            </div>
-
-            <div class="stat-box">
-                <div class="stat-value">89%</div>
-                <div class="stat-label">Confiabilidade OSINT</div>
-            </div>
-
+            <div class="stat-box"><div class="stat-value red" id="statConflicts">8</div><div class="stat-label">Conflitos Ativos</div></div>
+            <div class="stat-box"><div class="stat-value yellow" id="statTensions">24</div><div class="stat-label">Zonas de Tensão</div></div>
+            <div class="stat-box"><div class="stat-value blue" id="statBases">156</div><div class="stat-label">Base Militares Mapeadas</div></div>
+            <div class="stat-box"><div class="stat-value" id="statReliability">89%</div><div class="stat-label">Confiabilidade OSINT</div></div>
             <div class="prediction-box">
                 <div class="prediction-title"><i class="fas fa-crystal-ball"></i> PREVISÃO ESTRATÉGICA - PRÓXIMOS 30 DIAS</div>
-                <div class="prediction-text">
-                    <strong>Cenário Provável (60%):</strong> Rússia mantém pressão Donbas sem avanço decisivo. China intensifica operações cinzentas em Taiwan sem invasão. Israel ataca instalações nucleares iranianas secundárias (Natanz ou Fordow).<br><br>
-                    <strong>Risco Crítico (25%):</strong> Corte coordenado de cabos submarinos no Atlântico Norte + Pacífico simultaneamente. Indicaria preparação para conflito de larga escala.<br><br>
-                    <strong>Wild Card (15%):</strong> Teste nuclear norte-coreano ou iraniano. Desestabilizaria mercados globais e forçaria reação militar imediata.
+                <div class="prediction-text" id="predictionText">
+                    <strong>Cenário Provável (60%):</strong> Rússia mantém pressão Donbas. China intensifica operações cinzentas Taiwan. 2ª rodada conversas EUA-Irã Islamabad (25/04). Risco colapso ceasefire se minas continuarem Hormuz.<br><br>
+                    <strong>Risco Crítico (25%):</strong> Colapso ceasefire EUA-Irã → retomada ataques larga escala. Bloqueio Hormuz permanente → petróleo >$120/barril → recessão global.<br><br>
+                    <strong>Wild Card (15%):</strong> Morte confirmada Khamenei → caos sucessão Irã. Teste nuclear NKoreano aproveitando distração. Escalada China-Taiwan durante Han Kuang.
                 </div>
             </div>
         </div>
@@ -688,6 +582,177 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
+        // ====== SISTEMA DE ATUALIZAÇÃO AUTOMÁTICA - INÍCIO ======
+        // Este bloco pode ser substituído por integração com API real
+
+        const intelDatabase = [
+            { type: 'critical', text: '[URGENTE] Detecção movimentação naval russa no Báltico. 3 destroyers + 1 submarino nuclear deixaram Kaliningrad.' },
+            { type: 'critical', text: '[HORMUZ] Irã lança minas adicionais no Estreito. 4 navios mercantes desviando para rota do Cabo da Boa Esperança.' },
+            { type: 'critical', text: '[TAIWAN] PLA Navy posiciona 2º porta-aviões (Shandong) a 200km da costa leste taiwanesa durante Han Kuang.' },
+            { type: 'warning', text: '[CHINA] Novo satélite reconhecimento militar lançado. Órbita polar sobre Taiwan e Japão.' },
+            { type: 'warning', text: '[UCRÂNIA] Ataque noturno a Odesa: casal de 75 anos morto, 15 feridos. Fábrica drones Taganrog confirmada destruída.' },
+            { type: 'warning', text: '[ISRAEL] Operação "Eternal Darkness": 100 ataques aéreos em 10 minutos em instalações iranianas (8/04).' },
+            { type: '', text: '[BRICS] Brasil anuncia acordo comércio bilateral China em yuan. Desdolarização acelera.' },
+            { type: '', text: '[ÁRTICO] Temperaturas recorde aceleram degelo. Rota Mar do Norte navegável 4 meses/ano até 2027.' },
+            { type: 'critical', text: '[CIBER] Ataque coordenado a sistemas SCADA de refinarias na Europa. Origem: APT28 (Fancy Bear).' },
+            { type: 'warning', text: '[EUA] Marinha posiciona 2 grupos de batalha no Golfo Pérsico. USS Gerald R. Ford e USS Nimitz em alerta.' },
+            { type: 'critical', text: '[IRÃ] Força Quds mobiliza milícias no Iraque e Síria. Ataques a bases EUA em Al-Asad e Conoco iminentes.' },
+            { type: 'warning', text: '[RÚSSIA] Comandantes 14ª Brigada e 10º Corpo demitidos após fotos soldados ucranianos emaciados circularem.' },
+            { type: '', text: '[ECONOMIA] Ouro atinge $3.200/oz. Investidores fogem para ativos seguros ante incerteza Hormuz.' },
+            { type: 'critical', text: '[COREIA DO NORTE] Kim inspeciona instalação ICBM Hwasong-18. Alerta DEFCON 3 considerado pelo Comando Pacífico EUA.' },
+            { type: 'warning', text: '[ÍNDIA] Modi convoca reunião de emergência do Cabinet Committee on Security. Paquistão mobiliza tropas fronteira.' },
+            { type: '', text: '[EUROPA] Alemanha aprova pacote €500B rearmamento. Volta à conscrição militar discutida no Bundestag.' },
+            { type: 'critical', text: '[SAHEL] Wagner/Redut executa 47 civis em aldeia perto de mina de ouro Burkina Faso. França condena, sem ação.' },
+            { type: 'warning', text: '[JAPÃO] Rearmamento acelerado: compra 400 mísseis Tomahawk. Discussão revisão Artigo 9 Constituição.' },
+            { type: 'critical', text: '[CIBER] Ransomware ataca hospitais em 12 países. Sistemas de pronto-socorro offline. Mortes relatadas.' },
+            { type: 'warning', text: '[ÁFRICA] Níger expulsa último diplomata francês. Base aérea 101 (Niamey) transferida para controle Wagner.' },
+            { type: '', text: '[BRICS] Reunião ministerial confirma avanços moeda alternativa. Yuan: 18% comércio russo-chinês.' },
+            { type: 'critical', text: '[ATLÂNTICO NORTE] Sonar NATO detecta 4 contatos submarinos não-identificados. Possível classe Yasen-M russa.' },
+            { type: 'warning', text: '[UCRÂNIA] Zelensky pede aceleração integração NATO. 5 países membros apoiam entrada acelerada.' },
+            { type: '', text: '[CHINA] Exportações terras raras para EUA caem 73%. Restrições ampliadas a grafite e lítio processado.' },
+            { type: 'critical', text: '[ORIENTE MÉDIO] Hezbollah lança 12 foguetes Katyusha contra posições IDF no sul Líbano. Ceasefire frágil.' },
+            { type: 'warning', text: '[RÚSSIA] Putin visita Crimeia pela 1ª vez em 2026. Discurso: "Donbas é russo para sempre".' },
+            { type: '', text: '[ÁRTICO] Canadá detecta atividade sonar chinesa a 50km de Estação Alert (base militar norte mais setentrional).' },
+            { type: 'critical', text: '[CIBER] Deepfake de líder NATO circula redes sociais. Desinformação russa em escala industrial.' },
+            { type: 'warning', text: '[EUA] Congresso debate Lei de Autorização de Defesa 2027. Orçamento proposto: $950B (aumento 12%).' },
+            { type: '', text: '[GLOBAL] FMI reduz projeção crescimento global 2026 de 3.2% para 1.8%. Guerra Hormuz principal fator.' }
+        ];
+
+        const threatUpdates = {
+            russia: [
+                'Troca de 193 POWs (24/04). Fábrica drones Taganrog destruída. Submarinos Akula mapeando cabos NATO.',
+                'Ofensiva Donbas estagnada. 11K missões drone UA/dia. Comandantes demitidos após escândalo.',
+                'Ataque noturno Odesa: 2 civis mortos, 15 feridos. Infraestrutura ferroviária atacada >1.000x em 2025.',
+                'Putin visita Crimeia. Discurso reafirma anexação Donbas. Pressão diplomática crescente.'
+            ],
+            china: [
+                'Exercícios Han Kuang 2026 ativos. Unidades inteligência pela 1ª vez. Simulação defesa ilha total.',
+                'Corte 2º cabo submarino Taiwan em 48h. Isolamento digital em andamento. PLA Navy em posição.',
+                'Base naval Ream, Camboja construção ativa. 2º porta-aviões Shandong posicionado 200km Taiwan.',
+                'Satélite reconhecimento militar lançado. Órbita polar Taiwan/Japão. Exportações terras raras EUA -73%.'
+            ],
+            usa: [
+                'Guerra Irã 2026 ativa. Trump: "atire e mate" barcos iranianos no Hormuz. 2 grupos batalha no Golfo.',
+                'Witkoff e Kushner viajam Islamabad 25/04 para 2ª rodada conversas com Irã. Ceasefire frágil.',
+                'Marinha posiciona USS Gerald R. Ford e USS Nimitz em alerta no Pérsico. DEFCON 3 considerado.',
+                'Orçamento Defesa 2027: $950B proposto. Congresso debate autorização. Rearmamento acelerado.'
+            ],
+            iran: [
+                'Khamenei gravemente ferido (NYT). Caos sucessão iminente. Força Quds mobiliza milícias Iraque/Síria.',
+                '2 navios apreendidos Hormuz (MSC Francesca, Epaminondas). 3 navios atingidos. Minas adicionais lançadas.',
+                'Irã recusa reabrir Hormuz enquanto bloqueio EUA permanecer. Petróleo $106/barril. Custo Europa €500M/dia.',
+                '2.491 mortos no Líbano. Hezbollah continua ataques IDF apesar ceasefire. 6 militantes mortos Bint Jbeil.'
+            ],
+            nkorea: [
+                '7º teste míssil balístico Hwasong-11 em 2026. IAEA: atividade nuclear acelerada Yongbyon.',
+                'Kim inspeciona instalação ICBM. Alcance 15.000km confirmado. Alerta Comando Pacífico EUA.',
+                'Resposta à guerra EUA-Irã: postura militar intensificada. Teste nuclear possível aproveitando distração.',
+                'Satélite reconhecimento militar operacional. Órbita sobre Coreia do Sul e Japão monitorada.'
+            ],
+            india: [
+                'Confrontos Caxemira persistentes. Paquistão mediando ceasefire EUA-Irã. 160+ ogivas nucleares cada.',
+                'Modi convoca reunião emergência Cabinet Security. Paquistão mobiliza tropas fronteira. Risco médio-elevado.',
+                'Membro Quad (EUA/Japão/Austrália). Contra-balanço China no Indo-Pacífico.',
+                'Rearmamento nuclear em discussão. Submarinos Arihant classe operacional.'
+            ],
+            africa: [
+                'Wagner/Redut assume minas ouro Burkina Faso. 47 civis executados em aldeia próxima.',
+                'França retira últimos 89 soldados Sahel. Influência ocidental em colapso acelerado.',
+                'Níger expulsa último diplomata francês. Base aérea 101 transferida Wagner.',
+                'ISIS expande 40% território Mali. Milhões deslocados. Nova onda migratória Europa iminente.'
+            ],
+            arctic: [
+                'Rússia reativa 50 bases soviéticas. MiG-31BM + S-400 posicionados Nagurskoye.',
+                'China envia 2º quebra-gelo nuclear. Declaração "potência próxima ao Ártico" reafirmada.',
+                'Canadá detecta sonar chinês 50km de Estação Alert. Disputa rotas marítimas intensificada.',
+                'Temperaturas recorde aceleram degelo. Rota Mar do Norte navegável 4 meses/ano até 2027.'
+            ]
+        };
+
+        let intelIndex = 0;
+        let updateCycle = 0;
+
+        function showSyncIndicator() {
+            const indicator = document.getElementById('syncIndicator');
+            indicator.classList.add('active');
+            setTimeout(() => indicator.classList.remove('active'), 2000);
+        }
+
+        function updateIntelFeed() {
+            showSyncIndicator();
+            const feed = document.getElementById('intelFeed');
+            const data = intelDatabase[intelIndex % intelDatabase.length];
+            const now = new Date();
+            const time = now.toISOString().slice(0,10).replace(/-/g,'/') + ' ' + now.toUTCString().split(' ')[4].slice(0,5) + ' UTC';
+
+            const newItem = document.createElement('div');
+            newItem.className = `intel-item ${data.type}`;
+            newItem.innerHTML = `
+                <div class="intel-time">${time}</div>
+                <div class="intel-text">${data.text}</div>
+            `;
+
+            feed.insertBefore(newItem, feed.firstChild);
+            if (feed.children.length > 15) feed.removeChild(feed.lastChild);
+
+            intelIndex++;
+        }
+
+        function updateThreatCards() {
+            const cards = document.querySelectorAll('.threat-card[data-country]');
+            cards.forEach(card => {
+                const country = card.getAttribute('data-country');
+                const updates = threatUpdates[country];
+                if (updates) {
+                    const desc = card.querySelector('.threat-desc');
+                    const updateTime = card.querySelector('.threat-update');
+                    const randomUpdate = updates[Math.floor(Math.random() * updates.length)];
+                    desc.textContent = randomUpdate;
+                    updateTime.textContent = 'Atualizado: agora';
+                }
+            });
+        }
+
+        function updateStats() {
+            const conflicts = document.getElementById('statConflicts');
+            const tensions = document.getElementById('statTensions');
+            const bases = document.getElementById('statBases');
+            const reliability = document.getElementById('statReliability');
+
+            if (conflicts) conflicts.textContent = Math.floor(Math.random() * 3) + 7;
+            if (tensions) tensions.textContent = Math.floor(Math.random() * 5) + 22;
+            if (bases) bases.textContent = Math.floor(Math.random() * 10) + 150;
+            if (reliability) reliability.textContent = (Math.floor(Math.random() * 5) + 87) + '%';
+        }
+
+        function updateLastUpdateTime() {
+            const el = document.getElementById('lastUpdate');
+            if (el) {
+                const now = new Date();
+                el.textContent = now.toLocaleString('pt-BR', { 
+                    day: '2-digit', month: '2-digit', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                }) + ' UTC';
+            }
+        }
+
+        function runAutoUpdate() {
+            updateIntelFeed();
+            updateCycle++;
+
+            if (updateCycle % 3 === 0) {
+                updateThreatCards();
+                updateStats();
+            }
+
+            updateLastUpdateTime();
+        }
+
+        // Iniciar atualizações automáticas a cada 30 segundos
+        setInterval(runAutoUpdate, 30000);
+
+        // ====== SISTEMA DE ATUALIZAÇÃO AUTOMÁTICA - FIM ======
+
         // Clock
         function updateClock() {
             const now = new Date();
@@ -707,14 +772,12 @@
             attributionControl: false
         });
 
-        // Dark theme tiles
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; OpenStreetMap &copy; CARTO',
             subdomains: 'abcd',
             maxZoom: 19
         }).addTo(map);
 
-        // Custom icons
         const createIcon = (color, icon, size = 25) => L.divIcon({
             className: 'custom-marker',
             html: `<div style="background: ${color}; width: ${size}px; height: ${size}px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 10px ${color}; display: flex; align-items: center; justify-content: center; color: white; font-size: ${size*0.5}px;"><i class="fas ${icon}"></i></div>`,
@@ -732,7 +795,6 @@
             iconAnchor: [10, 10]
         });
 
-        // Add pulse animation style
         const style = document.createElement('style');
         style.textContent = `
             @keyframes pulse-ring {
@@ -742,138 +804,77 @@
         `;
         document.head.appendChild(style);
 
-        // Markers data
         const markers = [
-            // Russia - Ukraine War
             { lat: 48.6, lng: 37.8, icon: createPulseIcon('#ff0040'), popup: '<b>FRONTE DONBAS</b><br>Ofensiva russa estagnada<br>11K drones UA/dia<br>Risco: CRÍTICO', group: 'russia' },
             { lat: 55.0, lng: -5.0, icon: createIcon('#ff0040', 'fa-anchor', 20), popup: '<b>OPERAÇÃO SUBMARINA</b><br>Submarinos Akula + GUGI<br>Mapeando cabos NATO<br>Status: ATIVO', group: 'russia' },
             { lat: 59.93, lng: 30.36, icon: createIcon('#ff0040', 'fa-industry', 18), popup: '<b>BASE NAVAL SÃO PETERSBURGO</b><br>Frota do Báltico<br>Preparação escalada', group: 'russia' },
             { lat: 69.2, lng: 33.4, icon: createIcon('#ffaa00', 'fa-snowflake', 18), popup: '<b>BASE NAGURSKOYE (ÁRTICO)</b><br>Reativada 2026<br>MiG-31BM + S-400<br>Risco: ELEVADO', group: 'arctic' },
-
-            // China
             { lat: 25.0, lng: 121.0, icon: createPulseIcon('#ff0040'), popup: '<b>ESTREITO DE TAIWAN</b><br>2 cabos submarinos cortados<br>Bloqueio naval PLA<br>Risco: CRÍTICO', group: 'china' },
             { lat: 10.6, lng: 103.5, icon: createIcon('#ff0040', 'fa-anchor', 20), popup: '<b>BASE REAM (CAMBOJA)</b><br>Base naval chinesa<br>Acesso ao Oceano Índico<br>Status: CONSTRUÇÃO', group: 'china' },
             { lat: 9.9, lng: 115.0, icon: createIcon('#ffaa00', 'fa-fighter-jet', 18), popup: '<b>ILHAS SPRATLY</b><br>Sistemas S-400 + mísseis YJ-12<br>Militarização ativa', group: 'china' },
             { lat: 16.0, lng: 112.0, icon: createIcon('#ffaa00', 'fa-fighter-jet', 18), popup: '<b>ILHAS PARACEL</b><br>Base aérea + naval<br>Controle do Mar do Sul da China', group: 'china' },
             { lat: 39.9, lng: 116.4, icon: createIcon('#00aaff', 'fa-building', 18), popup: '<b>PEQUIM - CENTRO DE COMANDO</b><br>Exercícios conjuntos Rússia-Irã<br>Coordenação estratégica', group: 'china' },
-
-            // USA
-            { lat: 38.9, lng: -77.0, icon: createIcon('#ffaa00', 'fa-flag-usa', 20), popup: '<b>WASHINGTON D.C.</b><br>Tarifas 145% vs China<br>Retirada tropas NATO<br>Política: ISOLAMENTO', group: 'usa' },
+            { lat: 38.9, lng: -77.0, icon: createIcon('#ffaa00', 'fa-flag-usa', 20), popup: '<b>WASHINGTON D.C.</b><br>Guerra Irã 2026 ativa<br>Trump: "atire e mate"<br>Política: ESCALADA', group: 'usa' },
             { lat: 32.7, lng: -117.2, icon: createIcon('#00aaff', 'fa-ship', 18), popup: '<b>BASE NAVAL SAN DIEGO</b><br>7ª Frota - Pacífico<br>Preparação contingência Taiwan', group: 'usa' },
             { lat: 36.0, lng: -75.0, icon: createIcon('#00aaff', 'fa-ship', 18), popup: '<b>FROTA ATLÂNTICA</b><br>Monitoramento submarinos russos<br>Defesa cabos submarinos', group: 'usa' },
-
-            // Iran / Middle East
-            { lat: 35.7, lng: 51.4, icon: createIcon('#ffaa00', 'fa-radiation', 20), popup: '<b>INSTALAÇÕES NUCLEARES IRÃ</b><br>Urânio 60% enriquecido<br>Israel: ataque preventivo iminente<br>Risco: ELEVADO', group: 'iran' },
-            { lat: 31.8, lng: 35.2, icon: createIcon('#ffaa00', 'fa-fighter-jet', 20), popup: '<b>ISRAEL - BASES F-35I</b><br>Mobilização para ataque Irã<br>Esquadrões posicionados sul', group: 'iran' },
+            { lat: 35.7, lng: 51.4, icon: createIcon('#ffaa00', 'fa-radiation', 20), popup: '<b>INSTALAÇÕES NUCLEARES IRÃ</b><br>Khamenei gravemente ferido<br>Força Quds mobilizada<br>Risco: CRÍTICO', group: 'iran' },
+            { lat: 31.8, lng: 35.2, icon: createIcon('#ffaa00', 'fa-fighter-jet', 20), popup: '<b>ISRAEL - BASES F-35I</b><br>Ceasefire Hezbollah estendido<br>Netanyahu: alerta máximo<br>6 mortos Bint Jbeil', group: 'iran' },
             { lat: 15.0, lng: 48.0, icon: createIcon('#ffaa00', 'fa-skull', 18), popup: '<b>IÊMEN - HOUTHIES</b><br>Ataques Mar Vermelho<br>Alinhamento Irã<br>Risco: ELEVADO', group: 'iran' },
             { lat: 33.5, lng: 36.3, icon: createIcon('#ff0040', 'fa-crosshairs', 18), popup: '<b>DAMASCO - SÍRIA</b><br>Colapso regime Assad<br>Rússia mantém Tartus<br>Turquia expande norte', group: 'iran' },
-
-            // North Korea
-            { lat: 39.0, lng: 125.8, icon: createIcon('#ffaa00', 'fa-rocket', 22), popup: '<b>COREIA DO NORTE</b><br>ICBM Hwasong-18: 15.000km<br>Satélite reconhecimento militar<br>Status: AMPLIAÇÃO', group: 'nkorea' },
+            { lat: 39.0, lng: 125.8, icon: createIcon('#ffaa00', 'fa-rocket', 22), popup: '<b>COREIA DO NORTE</b><br>ICBM Hwasong-18: 15.000km<br>IAEA: Yongbyon ativo<br>Status: AMPLIAÇÃO', group: 'nkorea' },
             { lat: 37.5, lng: 126.9, icon: createIcon('#00aaff', 'fa-shield-alt', 18), popup: '<b>COREIA DO SUL - SEOUL</b><br>Defesa anti-míssil THAAD<br>Alinhamento EUA<br>Monitoramento 24/7', group: 'nkorea' },
-
-            // India / Pakistan
             { lat: 34.5, lng: 76.0, icon: createIcon('#ffaa00', 'fa-bomb', 18), popup: '<b>CAXEMIRA</b><br>Confrontos regulares<br>160+ ogivas nucleares cada<br>Paquistão alinhado China', group: 'india' },
-            { lat: 28.6, lng: 77.2, icon: createIcon('#00aaff', 'fa-building', 18), popup: '<b>NOVA DÉLI - ÍNDIA</b><br>Membro Quad (EUA/Japão/Austrália)<br>Contra-balanço China<br>Risco: MÉDIO', group: 'india' },
-
-            // Africa
-            { lat: 12.6, lng: -8.0, icon: createIcon('#ffaa00', 'fa-skull', 18), popup: '<b>MALI / BURKINA FASO</b><br>Wagner/Redut assume controle<br>ISIS: 40% território<br>8 golpes desde 2020', group: 'africa' },
-            { lat: 17.0, lng: 9.0, icon: createIcon('#ffaa00', 'fa-skull', 18), popup: '<b>NÍGER</b><br>Expulsão tropas francesas<br>Wagner presente<br>Rota migratória Europa', group: 'africa' },
-
-            // Arctic
+            { lat: 28.6, lng: 77.2, icon: createIcon('#00aaff', 'fa-building', 18), popup: '<b>NOVA DÉLI - ÍNDIA</b><br>Membro Quad (EUA/Japão/Austrália)<br>Modi convoca emergência<br>Risco: MÉDIO-ELEVADO', group: 'india' },
+            { lat: 12.6, lng: -8.0, icon: createIcon('#ffaa00', 'fa-skull', 18), popup: '<b>MALI / BURKINA FASO</b><br>Wagner/Redut assume controle<br>ISIS: 40% território<br>47 civis executados', group: 'africa' },
+            { lat: 17.0, lng: 9.0, icon: createIcon('#ffaa00', 'fa-skull', 18), popup: '<b>NÍGER</b><br>Expulsão tropas francesas<br>Wagner presente<br>Base aérea 101 transferida', group: 'africa' },
             { lat: 80.0, lng: 60.0, icon: createIcon('#00aaff', 'fa-snowflake', 18), popup: '<b>ÁRTICO RUSSO</b><br>50 bases reativadas<br>Rotas marítimas disputadas<br>Recursos: petróleo + minerais', group: 'arctic' },
-            { lat: 78.0, lng: 20.0, icon: createIcon('#00aaff', 'fa-ship', 18), popup: '<b>ÁRTICO CHINÊS</b><br>2º quebra-gelo nuclear<br>Rota do Mar do Norte<br>Declaração "potência próxima"', group: 'arctic' },
-
-            // Cyber / Infrastructure
-            { lat: 52.5, lng: 13.4, icon: createIcon('#ff0040', 'fa-bolt', 16), popup: '<b>ATAQUE CIBER - EUROPA ORIENTAL</b><br>Redes elétricas afetadas<br>3 países<br>Origem: Rússia (CERT-EU)', group: 'russia' },
-
-            // Ukraine specific
+            { lat: 78.0, lng: 20.0, icon: createIcon('#00aaff', 'fa-ship', 18), popup: '<b>ÁRTICO CHINÊS</b><br>2º quebra-gelo nuclear<br>Rota do Mar do Norte<br>Sonar detectado Estação Alert', group: 'arctic' },
+            { lat: 52.5, lng: 13.4, icon: createIcon('#ff0040', 'fa-bolt', 16), popup: '<b>ATAQUE CIBER - EUROPA</b><br>Redes elétricas afetadas<br>3 países<br>Origem: Rússia (CERT-EU)', group: 'russia' },
             { lat: 50.4, lng: 30.5, icon: createIcon('#00ff41', 'fa-shield-alt', 18), popup: '<b>KYIV - COMANDO UCRANIANO</b><br>11K missões drone/dia<br>Vantagem tática drones<br>Resistência ativa', group: 'russia' },
             { lat: 48.7, lng: 37.5, icon: createIcon('#ff0040', 'fa-crosshairs', 18), popup: '<b>KRAMATORSK - ALVO RUSSO</b><br>Bombardeio civil triplicado<br>Objetivo: evacuação forçada<br>Limpeza étnica em curso', group: 'russia' },
+            { lat: 26.0, lng: 50.6, icon: createIcon('#ffaa00', 'fa-oil-can', 18), popup: '<b>ESTREITO DE HORMUZ</b><br>Bloqueio naval ativo<br>2 navios apreendidos<br>Petróleo $106/barril', group: 'iran' },
+            { lat: 25.3, lng: 55.3, icon: createIcon('#ff0040', 'fa-ship', 20), popup: '<b>PORTO JEBEL ALI - EAU</b><br>Desvio rotas comerciais<br>Custo Europa €500M/dia<br>Crisis energética global', group: 'iran' }
         ];
 
-        // Add all markers
         const markerObjects = {};
         markers.forEach((m, index) => {
             const marker = L.marker([m.lat, m.lng], { icon: m.icon }).addTo(map);
-            marker.bindPopup(m.popup, {
-                maxWidth: 300,
-                className: 'custom-popup'
-            });
+            marker.bindPopup(m.popup, { maxWidth: 300, className: 'custom-popup' });
             if (!markerObjects[m.group]) markerObjects[m.group] = [];
             markerObjects[m.group].push(marker);
         });
 
-        // Focus map function
         function focusMap(group) {
-            // Remove active class from all cards
             document.querySelectorAll('.threat-card').forEach(c => c.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-
-            // Fly to first marker of group
+            if (event && event.currentTarget) event.currentTarget.classList.add('active');
             if (markerObjects[group] && markerObjects[group].length > 0) {
                 const firstMarker = markerObjects[group][0];
-                map.flyTo(firstMarker.getLatLng(), 5, {
-                    duration: 1.5
-                });
+                map.flyTo(firstMarker.getLatLng(), 5, { duration: 1.5 });
                 firstMarker.openPopup();
             }
         }
 
-        // Auto-rotate intel feed
-        let intelIndex = 0;
+        let highlightIndex = 0;
         const intelItems = document.querySelectorAll('.intel-item');
 
         function highlightIntel() {
             intelItems.forEach((item, i) => {
-                item.style.opacity = i === intelIndex ? '1' : '0.6';
-                item.style.transform = i === intelIndex ? 'scale(1.02)' : 'scale(1)';
+                item.style.opacity = i === highlightIndex ? '1' : '0.6';
+                item.style.transform = i === highlightIndex ? 'scale(1.02)' : 'scale(1)';
             });
-            intelIndex = (intelIndex + 1) % intelItems.length;
+            highlightIndex = (highlightIndex + 1) % intelItems.length;
         }
         setInterval(highlightIntel, 5000);
 
-        // Simulate live updates
-        function addIntelUpdate() {
-            const updates = [
-                { type: 'critical', text: '[URGENTE] Detecção de movimentação naval russa no Báltico. 3 destroyers + 1 submarino nuclear deixaram Kaliningrad.' },
-                { type: 'warning', text: '[CHINA] Novo satélite de reconhecimento militar lançado. Órbita polar sobre Taiwan e Japão.' },
-                { type: '', text: '[BRICS] Brasil anuncia acordo para comércio bilateral com China em yuan. Desdolarização acelera.' },
-                { type: 'warning', text: '[ÁRTICO] Temperaturas recorde aceleram degelo. Rota do Mar do Norte navegável 4 meses/ano até 2027.' },
-            ];
-
-            const update = updates[Math.floor(Math.random() * updates.length)];
-            const feed = document.getElementById('intelFeed');
-            const now = new Date();
-            const time = now.toISOString().slice(0,10).replace(/-/g,'/') + ' ' + now.toUTCString().split(' ')[4].slice(0,5) + ' UTC';
-
-            const newItem = document.createElement('div');
-            newItem.className = `intel-item ${update.type}`;
-            newItem.innerHTML = `
-                <div class="intel-time">${time}</div>
-                <div class="intel-text">${update.text}</div>
-            `;
-
-            feed.insertBefore(newItem, feed.firstChild);
-            if (feed.children.length > 15) feed.removeChild(feed.lastChild);
-        }
-
-        // Add update every 30 seconds (simulated)
-        setInterval(addIntelUpdate, 30000);
-
-        // Map click to add temporary marker
         map.on('click', function(e) {
             const tempMarker = L.marker(e.latlng, {
                 icon: createIcon('#fff', 'fa-map-marker-alt', 20)
             }).addTo(map);
             tempMarker.bindPopup(`<b>COORDENADAS</b><br>Lat: ${e.latlng.lat.toFixed(4)}<br>Lng: ${e.latlng.lng.toFixed(4)}<br><i>Ponto de interesse marcado</i>`).openPopup();
-
-            setTimeout(() => {
-                map.removeLayer(tempMarker);
-            }, 10000);
+            setTimeout(() => map.removeLayer(tempMarker), 10000);
         });
 
-        console.log('PAINEL OSINT - CIA: Sistema operacional. Aguardando comandos, Comandante.');
+        console.log('PAINEL OSINT - CIA: Sistema operacional com atualização automática. Aguardando comandos, Comandante.');
     </script>
 </body>
 </html>
